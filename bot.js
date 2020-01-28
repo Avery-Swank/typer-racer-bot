@@ -1,5 +1,5 @@
 
-const { Builder, By } = require('selenium-webdriver')
+const { Builder, By, until } = require('selenium-webdriver')
 const { chromedriver } = require('chromedriver')
 
 /**
@@ -32,7 +32,7 @@ const waitUntilClickable = async(driver = {}, path = ``) => {
 const main = async () => {
 
     const timeBetweenWords = 100
-    const closeAfterTyping = false
+    const raceType = `Practice`
 
     console.log("Running main...")
     console.log(`Running typer-racer-bot`)
@@ -46,22 +46,28 @@ const main = async () => {
     await driver.get(`https://play.typeracer.com/`)
 
     // Click enter a practice race
-    await waitUntilClickable(driver, `//a[contains(text(), "Practice")]`)
-    const enterRaceButton = await driver.findElement(By.xpath(`//a[contains(text(), "Practice")]`))
+    await waitUntilClickable(driver, `//a[contains(text(), "${raceType}")]`)
+    const enterRaceButton = await driver.findElement(By.xpath(`//a[contains(text(), "${raceType}")]`))
     await enterRaceButton.click()
 
-    // Wait 4 seconds for the countdown to go
-    await driver.sleep(4000)
-
-    // Start racing
+    // Get Racing text
+    await waitUntilClickable(driver, `//table[@class="gameView"]/tbody/tr[2]/td/table/tbody//tr[1]//div`)
     const raceTextElement = await driver.findElement(By.xpath(`//table[@class="gameView"]/tbody/tr[2]/td/table/tbody//tr[1]//div`))
-    const raceInput = await driver.findElement(By.xpath(`//table[@class="inputPanel"]//input[@type="text"]`))
     const raceText = await raceTextElement.getText()
-
     console.log(`typer-racer-bot: Text: ${raceText}`)
 
+    // Wait until the input is available to immediately start the race
+    var raceInput = null
+    while(true){
+        try{
+            raceInput = await driver.findElement(By.xpath(`//table[@class="inputPanel"]//input[@type="text"]`))
+            await raceInput.sendKeys(``)
+            break
+        } catch (e) {}
+    }
+
     // To prevent from being caught for cheating, parse the string by spaces and take a pause between each word
-    const raceTextWords = raceText.split(` `)
+    const raceTextWords = await raceText.split(` `)
     for(const raceTextWord of raceTextWords){
         await raceInput.sendKeys(raceTextWord + ` `)
         await driver.sleep(timeBetweenWords)
@@ -70,8 +76,8 @@ const main = async () => {
     console.log(`typer-racer-bot: Finished Race!`)
 
     // CLOSE driver
-    await driver.close()
-    await driver.quit()
+    //await driver.close()
+    //await driver.quit()
 
     console.log(`typer-racer-bot: DONE`)
 
