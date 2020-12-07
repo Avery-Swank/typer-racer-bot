@@ -4,7 +4,7 @@
   "description": "A Selenium Webdriver NodeJS application for playing Typer Racer.",
   "main": "bot.js",
   "dependencies": {
-    "chromedriver": "^83.0.0",
+    "chromedriver": "^85.0.1",
     "selenium-webdriver": "^4.0.0-alpha.5"
   },
   "devDependencies": {},
